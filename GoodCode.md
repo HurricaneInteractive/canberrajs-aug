@@ -29,6 +29,52 @@ class MyApp extends App {
 export default withApollo(MyApp)
 ```
 
+# nav
+
+```javascript
+import Link from 'next/link'
+import { gql } from "apollo-boost";
+import { Query } from "react-apollo"
+import { ReactElement } from 'react';
+import getCategoryColour from '../lib/categoryColors';
+
+const GET_CATEGORIES = gql`
+  query GetCategoriesForNav {
+    categories {
+      id
+      name
+    }
+  }
+`
+
+export default function Nav () {
+  return (
+    <nav>
+      <ul className='flex justify-between items-center pt-8 pb-4 mb-10 border-b-2 border-gray-300 overflow-x-auto'>
+        <Query query={GET_CATEGORIES}>
+          {({ loading, error, data }: any): string | ReactElement[] => {
+            if (loading) return "Loading...";
+            if (error) return `Error! ${error.message}`;
+
+            const { categories } = data
+
+            return categories.map((edge: any): ReactElement => (
+              <li className="px-5" key={edge.id}>
+                <Link href={`/resauce?id=${edge.id}`}>
+                  <a className={`whitespace-no-wrap text-xs font-bold uppercase block relative text-${getCategoryColour(edge.id)}-600`}>
+                    {edge.name}
+                  </a>
+                </Link>
+              </li>
+            ))
+          }}
+        </Query>
+      </ul>
+    </nav>
+  )
+}
+```
+
 # index.tsx
 
 ```javascript
@@ -36,46 +82,37 @@ import { Component } from 'react';
 import { gql } from "apollo-boost";
 
 import CategorySection from "../components/CategorySection"
-import PageTitle from '../components/PageTitle';
-import Nav from "../components/nav";
 
 class Home extends Component {
   static async getInitialProps({ apolloClient }: any) {
-    const categories = await apolloClient.query({
+    const data = await apolloClient.query({
       query: gql`
         query AllCategories {
-          categories(where: {
-            exclude: 1,
-            hideEmpty: true
-          }) {
-            edges {
-              node {
-                name
-                categoryId
-              }
-            }
+          categories {
+            id
+            name
           }
         }
       `
     })
 
-    return { categories }
+    return { data }
   }
 
-  renderCategorySections = (categories: any) => {
-    const { data: { categories: { edges } } } = categories
+  renderCategorySections = (data: any) => {
+    const { categories } = data
 
-    return edges.map((edge: any) => {
-      const { node: { name, categoryId } } = edge
-      return <CategorySection name={name} categoryId={categoryId} key={categoryId} />
+    return categories.map((edge: any) => {
+      const { name, id } = edge
+      return <CategorySection name={name} categoryId={id} key={id} />
     })
   }
 
   render = () => {
-    const { categories } = this.props
+    const { data } = this.props
     return (
       <>
-        { this.renderCategorySections(categories) }
+        { this.renderCategorySections(data.data) }
       </>
     )
   }
@@ -95,14 +132,10 @@ import Link from "next/link";
 
 const GET_POSTS_BY_CATEGORYID = gql`
   query PostsByCateogory($categoryId: Int!) {
-    posts(where:{categoryId:$categoryId}) {
-      edges {
-        node {
-          id
-          title
-          content
-        }
-      }
+    posts(where: {categoryId: {_eq: $categoryId}}) {
+      id
+      title
+      content
     }
   }
 `
@@ -130,10 +163,10 @@ const CategorySection = ({ name = null, categoryId }: any): ReactElement => {
           if (loading) return "Loading...";
           if (error) return `Error! ${error.message}`;
 
-          const { posts: { edges } } = data
+          const { posts } = data
 
-          return edges.map((edge: any) => (
-            <PostCard {...edge.node} key={edge.node.id} color={getCategoryColour(parseInt(categoryId))} />
+          return posts.map((edge: any) => (
+            <PostCard title={edge.title} content={edge.content} key={edge.id} color={getCategoryColour(parseInt(categoryId))} />
           ))
         }}
         </Query>
@@ -144,91 +177,13 @@ const CategorySection = ({ name = null, categoryId }: any): ReactElement => {
 export default CategorySection
 ```
 
-#nav
-
-```javascript
-import Link from 'next/link'
-import { gql } from "apollo-boost";
-import { Query } from "react-apollo"
-import { ReactElement } from 'react';
-import getCategoryColour from '../lib/categoryColors';
-
-const GET_CATEGORIES = gql`
-  query GetCategoriesForNav {
-    categories(where: {
-      exclude: 1,
-      hideEmpty: true
-    }) {
-      edges {
-        node {
-          name
-          categoryId
-        }
-      }
-    }
-  }
-`
-
-export default function Nav () {
-  return (
-    <nav>
-      <ul className='flex justify-between items-center pt-8 pb-4 mb-10 border-b-2 border-gray-300 overflow-x-auto'>
-        <Query query={GET_CATEGORIES}>
-          {({ loading, error, data }: any): string | ReactElement[] => {
-            if (loading) return "Loading...";
-            if (error) return `Error! ${error.message}`;
-
-            const { categories: { edges } } = data
-
-            return edges.map((edge: any): ReactElement => (
-              <li className="px-5">
-                <Link href={`/resauce?id=${edge.node.categoryId}`}>
-                  <a className={`whitespace-no-wrap text-xs font-bold uppercase block relative text-${getCategoryColour(edge.node.categoryId)}-600`}>
-                    {edge.node.name}
-                  </a>
-                </Link>
-              </li>
-            ))
-          }}
-        </Query>
-      </ul>
-    </nav>
-  )
-}
-
-```
-
 # resauce
 ```javascript
 import { Component } from "react";
-import { gql } from "apollo-boost";
 import { withRouter } from 'next/router';
 import CategorySection from "../components/CategorySection";
 
 class Resauce extends Component {
-  static async getInitialProps({ query, apolloClient }: any) {
-    const categories = await apolloClient.query({
-      query: gql`
-        query PostsByCateogory($categoryId: Int!) {
-          posts(where:{categoryId:$categoryId}) {
-            edges {
-              node {
-                id
-                title
-                content
-              }
-            }
-          }
-        }
-      `,
-      variables: {
-        categoryId: query.id
-      }
-    })
-
-    return { categories }
-  }
-
   render = () => {
     return (
       <>

@@ -1,11 +1,21 @@
 import { ReactElement } from "react"
+import { Query } from "react-apollo"
+import gql from "graphql-tag"
 import PostCard from "../PostCard";
 import getCategoryColour from "../../lib/categoryColors";
 import Link from "next/link";
-import { itemsById } from "../../lib/categories"
+
+const GET_POSTS_BY_CATEGORYID = gql`
+  query PostsByCateogory($categoryId: Int!) {
+    posts(where: {categoryId: {_eq: $categoryId}}) {
+      id
+      title
+      content
+    }
+  }
+`
 
 const CategorySection = ({ name = null, categoryId }: any): ReactElement => {
-  const items: any = itemsById[categoryId]
   return (
     <div className="mb-8">
       {
@@ -23,9 +33,18 @@ const CategorySection = ({ name = null, categoryId }: any): ReactElement => {
         )
       }
       <div className="flex flex-wrap -mx-2">
-        {items.map((edge: any) => (
-          <PostCard {...edge} key={edge.id} color={getCategoryColour(parseInt(categoryId))} />
-        ))}
+        <Query query={GET_POSTS_BY_CATEGORYID} variables={{ categoryId }}>
+          {({ loading, error, data }: any): ReactElement[] | string => {
+          if (loading) return "Loading...";
+          if (error) return `Error! ${error.message}`;
+
+          const { posts } = data
+
+          return posts.map((edge: any) => (
+            <PostCard title={edge.title} content={edge.content} key={edge.id} color={getCategoryColour(parseInt(categoryId))} />
+          ))
+        }}
+        </Query>
       </div>
     </div>
   )
