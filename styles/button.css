@@ -1,0 +1,53 @@
+.btn-blue {
+  @apply .bg-blue-500 .text-white .font-bold .py-2 .px-4 .rounded;
+}
+
+.wp-block-button {
+  @apply .w-12 .h-12 .rounded-full .bg-gray-600 .absolute .bg-center .bg-no-repeat .shadow-md .overflow-hidden;
+  bottom: 1rem;
+  right: 1rem;
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"%3E%3Ccircle cx="12" cy="12" r="10"%3E%3C/circle%3E%3Cpolyline points="12 16 16 12 12 8"%3E%3C/polyline%3E%3Cline x1="8" y1="12" x2="16" y2="12"%3E%3C/line%3E%3C/svg%3E');
+}
+
+.wp-block-button .wp-block-button__link {
+  @apply .w-full .h-full .rounded-full .absolute .top-0 .left-0 .overflow-hidden;
+  text-indent: -9999px;
+  font-size: 1px;
+  color: white;
+}
+
+.post-card[data-theme="gray"] .wp-block-button {
+  @apply .bg-gray-600;
+}
+
+.post-card[data-theme="red"] .wp-block-button {
+  @apply .bg-red-600;
+}
+
+.post-card[data-theme="orange"] .wp-block-button {
+  @apply .bg-orange-600;
+}
+
+.post-card[data-theme="green"] .wp-block-button {
+  @apply .bg-green-600;
+}
+
+.post-card[data-theme="teal"] .wp-block-button {
+  @apply .bg-teal-600;
+}
+
+.post-card[data-theme="blue"] .wp-block-button {
+  @apply .bg-blue-600;
+}
+
+.post-card[data-theme="indigo"] .wp-block-button {
+  @apply .bg-indigo-600;
+}
+
+.post-card[data-theme="purple"] .wp-block-button {
+  @apply .bg-purple-600;
+}
+
+.post-card[data-theme="pink"] .wp-block-button {
+  @apply .bg-pink-600;
+}

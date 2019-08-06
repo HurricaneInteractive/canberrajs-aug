@@ -1,0 +1,6 @@
+@import './button.css';
+@import './wp-block.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
